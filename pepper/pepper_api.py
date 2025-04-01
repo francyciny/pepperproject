@@ -28,7 +28,7 @@ class MockALProxy:
         print("[Mock] Pepper's {} would fade to {} in {} seconds".format(led, color, duration))
 
 # Initialize Pepper or Mock
-PEPPER_IP = "192.168.1.100"  # Update with actual IP
+PEPPER_IP = "127.0.0.1"  # Virtual robot IP
 PORT = 9559
 
 if ALProxy:
@@ -36,6 +36,7 @@ if ALProxy:
     tts = ALProxy("ALTextToSpeech", PEPPER_IP, PORT)  # Speech
     motion = ALProxy("ALMotion", PEPPER_IP, PORT)  # Movement
     leds = ALProxy("ALLeds", PEPPER_IP, PORT)  # LED control
+    animation_player = ALProxy("ALAnimationPlayer", PEPPER_IP, PORT) # Animations from Choregraphe
 else:
     print("!! NAOqi SDK not found, using mock Pepper")
     tts = MockALProxy("ALTextToSpeech", PEPPER_IP, PORT)
@@ -45,8 +46,17 @@ else:
 @app.route("/speak", methods=["POST"])
 def speak():
     data = request.get_json()
-    text = data.get("text", "")
-    tts.say(text)
+    text = data.get("text", "").strip()
+
+    if not text:
+        print("Error: Received empty text")
+        return jsonify({"error": "Text cannot be empty"}), 400
+
+    # Ensure text is a clean UTF-8 string
+    text = text.encode("utf-8") if isinstance(text, unicode) else str(text)
+
+    print("Sending text to Pepper: {}".format(repr(text)))  # Debugging log
+    tts.say(text)  # Make Pepper speak
     return jsonify({"message": "Speaking", "text": text})
 
 @app.route("/announce_turn", methods=["POST"])
@@ -68,16 +78,49 @@ def announce_winner():
         tts.say("I won! Good game!")
         motion.openHand("LHand")
         motion.openHand("RHand")
-        motion.setAngles("RShoulderPitch", -1.0, 0.1)
-        motion.setAngles("LShoulderPitch", -1.0, 0.1)
+        motion.setAngles("HipRoll", 5 , 0.1)
+        time.sleep(2)
+        motion.setAngles("HipRoll", 0 , 0.1)
+        time.sleep(2)
+        motion.setAngles("HipRoll", -5 , 0.1)
+        time.sleep(2)
+        motion.setAngles("HipRoll", 0 , 0.1)
+        time.sleep(2)
+        motion.setAngles("HipRoll", 5 , 0.1)
+        time.sleep(2)
+        motion.setAngles("HipRoll", 0 , 0.1)
+        time.sleep(2)
+        motion.setAngles("HipRoll", -5 , 0.1)
     elif winner == "X":
         tts.say("You won! Well played!")
-        leds.fadeRGB("FaceLeds", 0x0000FF, 1.0)  # Blue face
+        leds.fadeRGB("FaceLeds", "blue", 0.5) 
+        motion.setAngles("HeadPitch", 1, 0.2)
+        ## leds.fadeRGB("FaceLeds", int("0000FF", 16), 1.0)
+        ## leds.fadeRGB("FaceLeds", 0, 0, 255, 1.0)  # Explicit RGB values (0,0,255) for blue
+        ## leds.fadeRGB("FaceLeds", 0x0000FF, 1.0)  # Blue face
     else:
         tts.say("It's a draw!")
-        motion.setAngles("Shoulders", [0.2, -0.2], 0.1)
-    
+        motion.setAngles("HeadYaw", 0.3, 0.2)
+        motion.setAngles("HeadYaw", -0.6, 0.2)
+        motion.setAngles("HeadPitch", 0.0, 0.2)
+        motion.setAngles("HipRoll", 2.5, 0.2)
+        motion.setAngles("HipRoll", -5, 0.2)
+
     return jsonify({"message": "Winner announced", "winner": winner})
+
+@app.route("/resting_position", methods=["POST"])
+def resting_position():
+    print("Moving Pepper to resting position")  # Debugging print
+    
+    motion.setAngles("RShoulderPitch", 1.8, 0.1)
+    motion.setAngles("LShoulderPitch", 1.8, 0.1)
+    motion.setAngles("HeadYaw", 0.0, 0.2)
+    motion.setAngles("RWristYaw", 0.0, 0.2)  
+    motion.setAngles("HeadPitch", 0.0, 0.2)
+    motion.setAngles("HipRoll", 0, 0.2)  
+    
+
+    return jsonify({"message": "Moving to resting position"})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001)  # Different port from server.py

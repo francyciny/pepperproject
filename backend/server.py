@@ -79,6 +79,8 @@ def update_board():
     winner = check_winner()
     if winner:
         requests.post(f"{PEPPER_API_URL}/announce_winner", json={"winner": winner})
+        time.sleep(3)
+        requests.post(f"{PEPPER_API_URL}/resting_position", json={"winner": winner})
         return jsonify({"message": "Game over", "winner": winner, "board": board})
 
     current_player = "O"
@@ -101,6 +103,8 @@ def get_robot_move():
             winner = check_winner()
             if winner:
                 requests.post(f"{PEPPER_API_URL}/announce_winner", json={"winner": winner})
+                time.sleep(3)
+                requests.post(f"{PEPPER_API_URL}/resting_position", json={"winner": winner})
                 return jsonify({"message": "Game over", "winner": winner, "board": board})
             
             current_player = "X"
