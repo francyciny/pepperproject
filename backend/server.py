@@ -120,5 +120,39 @@ def get_robot_move():
     
     return jsonify({"message": "Not robot's turn"})
 
+# Social interaction routes 
+@app.route("/get_yes_no", methods=["POST"])
+def get_yes_no():
+    data = request.get_json()
+    input = data.get("input")
+    response = requests.post(f"{PEPPER_API_URL}/get_yes_no", json={"input": input})
+    data = response.json()  
+    print("Received from Pepper API:", data)  # Debugging print
+
+    answer = data.get("message", "unclear")  
+    return jsonify({"answer": answer})  
+
+@app.route("/get_name", methods=["GET"])
+def get_name():
+    response = requests.get(f"{PEPPER_API_URL}/get_name")
+    data = response.json()
+    name = data.get("message", "unclear")
+    return jsonify({"name": name})
+
+@app.route("/greet_user", methods=["GET"])
+def greet_user():
+    response = requests.get(f"{PEPPER_API_URL}/greet_user")
+    data = response.json()
+    greeting = data.get("message", "unclear")
+    return jsonify({"greeting": greeting})
+
+@app.route("/play_again", methods=["GET"])
+def play_again():
+    response = requests.get(f"{PEPPER_API_URL}/play_again")
+    data = response.json()
+    print("Received from Pepper API:", data)  # Debugging print
+    answer = data.get("message", "unclear")
+    return jsonify({"answer": answer})
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)

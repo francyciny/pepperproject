@@ -1,18 +1,21 @@
 <template>
   <div id="app">
-    <h1 class="title">Tic-Tac-Toe with Pepper</h1>
+    <!-- Title Screen -->
+    <div v-if="showTitleScreen" class="title-screen">
+      <h1>HELLO</h1>
+    </div>
 
     <!-- Introductory Page -->
-    <div v-if="showIntro" class="intro-section">
+    <div v-if="showIntro && !showTitleScreen" class="intro-section">
       <p class="welcome-text">Hello, {{ userName }}! Do you want to play a game?</p>
       <button class="start-button" @click="startGame">Start Game</button>
     </div>
 
     <!-- Game Page -->
-    <div v-if="!showIntro">
+    <div v-if="!showIntro && !showTitleScreen">
       <p v-if="!winner" class="turn-text">Current Turn: {{ currentPlayer }}</p>
 
-      <!-- Tic-Tac-Toe Board (Always Visible) -->
+      <!-- Tic-Tac-Toe Board -->
       <div v-if="gameStarted" class="board">
         <div v-for="(cell, index) in board" 
              :key="index" 
@@ -27,7 +30,7 @@
         <p class="winner-text">
           {{ winner === "draw" ? "It's a draw!" : `Winner: ${winner}` }}
         </p>
-        <button class="restart-button" @click="restartGame">Restart Game</button>
+        <!-- <button class="restart-button" @click="restartGame">Restart Game</button> -->
       </div>
 
       <!-- Quit Game Button -->
@@ -42,15 +45,96 @@ import axios from "axios";
 export default {
   data() {
     return {
-      userName: "Player",
-      showIntro: true,
+      userName: "",
+      showTitleScreen: true,
+      showIntro: false,
       gameStarted: false,
       board: Array(9).fill(""),
       currentPlayer: "",
       winner: null,
     };
   },
+  mounted() {
+    this.startTitleSequence();
+  },
   methods: {
+    async startTitleSequence() {
+      // Show "HELLO" until player says "hello" back
+      setTimeout(async () => {
+        // this.showTitleScreen = false;
+        await this.greetUser();
+      }, 2000);
+    },
+
+    async greetUser(){
+      try {
+        const response = await axios.get("http://127.0.0.1:8080/greet_user");
+        if (response.data.greeting === "hello" || response.data.greeting === "hi" || response.data.greeting === "hey") {
+          await this.getUserName();
+        } else {
+          this.startTitleSequence();
+        }
+      } catch (error) {
+        console.error("Error getting greeting:", error);
+      }
+    },
+
+    async getUserName() {
+      try {
+        const response = await axios.get("http://127.0.0.1:8080/get_name");
+        if (response.data.name === "unclear") {
+          await this.getUserName();
+        } else {
+          this.userName = response.data.name;
+        }
+        this.getYesNoResponse("yes");
+      } catch (error) {
+        console.error("Error getting user name:", error);
+        this.userName = "Player";
+        this.getYesNoResponse("yes");
+      }
+    },
+
+    async getYesNoResponse(input) {
+      try {
+        const response = await axios.post("http://127.0.0.1:8080/get_yes_no", {input});
+        console.log("Response from server:", response.data.answer);
+        const answer = response.data.answer.toLowerCase();
+
+        if (answer === "yes") {
+          this.showTitleScreen = false;
+          this.showIntro = false;
+          this.startGame();
+        } else if (answer === "no") {
+          this.showTitleScreen = false;
+          this.showIntro = true;
+        } else {
+          setTimeout(() => this.getYesNoResponse("unclear"), 1000); // Retry if unclear
+        }
+      } catch (error) {
+        console.error("Error getting yes/no response:", error);
+        setTimeout(() => this.getYesNoResponse("unclear"), 1000); // Retry on error
+      }
+    },
+
+    async playAgain() {
+      try {
+        const response = await axios.get("http://127.0.0.1:8080/play_again");
+        const answer = response.data.answer.toLowerCase();
+
+        if (answer === "yes") {
+          this.restartGame();
+        } else if (answer === "no") {
+          this.quitGame();
+        } else {
+          setTimeout(this.playAgain, 1000); // Retry if unclear
+        }
+      } catch (error) {
+        console.error("Error getting yes/no response:", error);
+        setTimeout(this.playAgain, 1000); // Retry on error
+      }
+    },
+
     async startGame() {
       this.showIntro = false;
       const response = await axios.post("http://127.0.0.1:8080/start_game");
@@ -72,6 +156,7 @@ export default {
 
         if (response.data.message === "Game over") {
           this.winner = response.data.winner;
+          this.playAgain();
           return;  
         }
 
@@ -90,6 +175,7 @@ export default {
 
         if (response.data.message === "Game over") {
           this.winner = response.data.winner;
+          this.playAgain();
           return;  
         }
 
@@ -109,13 +195,16 @@ export default {
       if (this.currentPlayer === "O") {
         setTimeout(() => this.getRobotMove(), 1000);
       }
-    },
+    }, 
 
     quitGame() {
-      this.showIntro = true;
+      this.showIntro = false;
       this.board = Array(9).fill("");
       this.winner = null;
       this.gameStarted = false;
+      this.userName = "";
+      this.showTitleScreen = true;
+      this.startTitleSequence();
     },
   },
 };
@@ -129,11 +218,14 @@ export default {
   margin-top: 50px;
 }
 
-/* Title */
-.title {
-  font-size: 32px;
+/* Title Screen */
+.title-screen {
+  font-size: 50px;
   font-weight: bold;
-  margin-bottom: 20px;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 /* Intro Section */
