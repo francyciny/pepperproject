@@ -83,11 +83,11 @@ export default {
       try {
         const response = await axios.get("http://127.0.0.1:8080/get_name");
         if (response.data.name === "unclear") {
-          await this.getUserName();
+          setTimeout(() => this.getUserName(), 1000); // Retry if unclear
         } else {
           this.userName = response.data.name;
+          this.getYesNoResponse("yes");
         }
-        this.getYesNoResponse("yes");
       } catch (error) {
         console.error("Error getting user name:", error);
         this.userName = "Player";
@@ -218,7 +218,6 @@ export default {
   margin-top: 50px;
 }
 
-/* Title Screen */
 .title-screen {
   font-size: 50px;
   font-weight: bold;
@@ -228,7 +227,6 @@ export default {
   align-items: center;
 }
 
-/* Intro Section */
 .intro-section {
   margin-bottom: 30px;
 }
@@ -277,7 +275,7 @@ button {
   background-color: #e60000;
 }
 
-/* Turn Text */
+/* Current Turn text */
 .turn-text {
   font-size: 20px;
   margin-bottom: 15px;
@@ -309,14 +307,12 @@ button {
   background-color: #e0e0e0;
 }
 
-/* Winner Text */
 .winner-text {
   font-size: 24px;
   font-weight: bold;
   margin-top: 20px;
 }
 
-/* Game Over Section */
 .game-over-section {
   margin-top: 20px;
 }

@@ -2,12 +2,12 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import random
 import requests
-import time  # For adding a delay before Pepper moves
+import time  
 
 app = Flask(__name__)
 CORS(app)
 
-PEPPER_API_URL = "http://127.0.0.1:5001"  # Change if running on a different machine
+PEPPER_API_URL = "http://127.0.0.1:5001"  # To change when using real robot!!
 
 # Tic-Tac-Toe Board
 board = ["" for _ in range(9)]
@@ -94,7 +94,7 @@ def update_board():
 def get_robot_move():
     global current_player
     if current_player == "O":
-        # Introduce a delay before the robot moves
+        # Introduce a delay before pepper moves to make it more natural
         time.sleep(2)
 
         move = get_best_move()
@@ -109,7 +109,7 @@ def get_robot_move():
             
             current_player = "X"
 
-            # Make Pepper say a random comment
+            # Make Pepper say a random comment, i have to maybe change this later
             comments = ["Nice move!", "You're a tough opponent!", "That was smart!", "Hmm... tricky!"]
             requests.post(f"{PEPPER_API_URL}/speak", json={"text": random.choice(comments)})
 
@@ -127,7 +127,7 @@ def get_yes_no():
     input = data.get("input")
     response = requests.post(f"{PEPPER_API_URL}/get_yes_no", json={"input": input})
     data = response.json()  
-    print("Received from Pepper API:", data)  # Debugging print
+    print("Received from Pepper API:", data)  # Debugging 
 
     answer = data.get("message", "unclear")  
     return jsonify({"answer": answer})  
@@ -136,6 +136,7 @@ def get_yes_no():
 def get_name():
     response = requests.get(f"{PEPPER_API_URL}/get_name")
     data = response.json()
+    print("Received from Pepper API:", data)  # Debugging 
     name = data.get("message", "unclear")
     return jsonify({"name": name})
 
@@ -150,7 +151,7 @@ def greet_user():
 def play_again():
     response = requests.get(f"{PEPPER_API_URL}/play_again")
     data = response.json()
-    print("Received from Pepper API:", data)  # Debugging print
+    print("Received from Pepper API:", data)  # Debugging 
     answer = data.get("message", "unclear")
     return jsonify({"answer": answer})
 

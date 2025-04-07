@@ -10,7 +10,7 @@ except ImportError:
 app = Flask(__name__)
 
 class MockALProxy:
-    """Mock version of NAOqi's ALProxy for testing without a robot."""
+    """Mock functions for testing without a robot."""
     def __init__(self, service, ip, port):
         self.service = service
         self.ip = ip
@@ -29,8 +29,8 @@ class MockALProxy:
         print("[Mock] Pepper's {} would fade to {} in {} seconds".format(led, color, duration))
 
 # Initialize Pepper or Mock
-PEPPER_IP = "127.0.0.1"  # Virtual robot IP
-PORT = 9559
+PEPPER_IP = "127.0.0.1"  # Virtual robot IP, change when using real robot!!
+PORT = 9559  # Change when using real robot!!
 
 if ALProxy:
     print("NAOqi SDK found, using real Pepper")
@@ -39,14 +39,14 @@ if ALProxy:
     leds = ALProxy("ALLeds", PEPPER_IP, PORT)  # LED control
     animation_player = ALProxy("ALAnimationPlayer", PEPPER_IP, PORT) # Animations from Choregraphe
     try:
-        # Attempt to connect to real speech recognition
+        # Try to connect to real speech recognition, when using real robot should go
         speech_recognition = ALProxy("ALSpeechRecognition", PEPPER_IP, PORT)
         speech_recognition.setLanguage("English")
         speech_recognition_found = True
         print("Using real speech recognition.")
 
     except RuntimeError:
-        # If speech recognition service is not found, use mock version
+        # If speech recognition is not found, use mock version
         speech_recognition_found = False
         print("ALSpeechRecognition not found! Using mock speech recognition.")
     memory = ALProxy("ALMemory", PEPPER_IP, PORT) # Memory
@@ -65,11 +65,11 @@ def speak():
         print("Error: Received empty text")
         return jsonify({"error": "Text cannot be empty"}), 400
 
-    # Ensure text is a clean UTF-8 string
+    # Make text a UTF-8 string 
     text = text.encode("utf-8") if isinstance(text, unicode) else str(text)
 
-    print("Sending text to Pepper: {}".format(repr(text)))  # Debugging log
-    tts.say(text)  # Make Pepper speak
+    print("Sending text to Pepper: {}".format(repr(text)))  # Debugging
+    tts.say(text)  
     return jsonify({"message": "Speaking", "text": text})
 
 @app.route("/announce_turn", methods=["POST"])
@@ -109,8 +109,8 @@ def announce_winner():
         leds.fadeRGB("FaceLeds", "blue", 0.5) 
         motion.setAngles("HeadPitch", 1, 0.2)
         ## leds.fadeRGB("FaceLeds", int("0000FF", 16), 1.0)
-        ## leds.fadeRGB("FaceLeds", 0, 0, 255, 1.0)  # Explicit RGB values (0,0,255) for blue
-        ## leds.fadeRGB("FaceLeds", 0x0000FF, 1.0)  # Blue face
+        ## leds.fadeRGB("FaceLeds", 0, 0, 255, 1.0)  # RGB values (0,0,255) for blue
+        ## leds.fadeRGB("FaceLeds", 0x0000FF, 1.0)  
     else:
         tts.say("It's a draw!")
         motion.setAngles("HeadYaw", 0.3, 0.2)
@@ -123,7 +123,7 @@ def announce_winner():
 
 @app.route("/resting_position", methods=["POST"])
 def resting_position():
-    print("Moving Pepper to resting position")  # Debugging print
+    print("Moving Pepper to resting position")  # Debugging 
     
     motion.setAngles("RShoulderPitch", 1.8, 0.1)
     motion.setAngles("LShoulderPitch", 1.8, 0.1)
@@ -177,7 +177,12 @@ def get_yes_no():
     else:
         # MOCK FUNCTION
         print("(Mock) Listening for Yes/No...")
-        return jsonify({"message": random.choice(["yes", "no", "unclear"])})  # Simulate responses
+        response = random.choice(["yes", "no", "unclear"]) # Simulate responses
+        if response == "yes":
+            tts.say("Great! Let's play!")
+        elif response == "no":
+            tts.say("Alright! Press the button when you want to play!")
+        return jsonify({"message": response})  
     
 @app.route("/get_name", methods=["GET"])
 def get_name():
@@ -212,12 +217,12 @@ def get_name():
     else:
         # MOCK FUNCTION
         print("(Mock) Listening for name...")
-        name = random.choice(["Francesca", "unclear"])
+        name = random.choice(["Francesca", "unclear"]) # Simulate responses
         if name == "unclear":
             tts.say("Sorry, I didn't catch that. Please try again.")
         else:
             tts.say("Nice to meet you, " + name + "!")
-        return jsonify({"message": name})  # Simulate speech recognition
+        return jsonify({"message": name})  
 
 @app.route("/greet_user", methods=["GET"])
 def greet_user():
@@ -285,7 +290,12 @@ def play_again():
     else:
         # MOCK FUNCTION
         print("(Mock) Listening for Yes/No...")
-        return jsonify({"message": random.choice(["yes", "no", "unclear"])})  # Simulate responses
+        response = random.choice(["yes", "no", "unclear"])
+        if response == "yes":
+            tts.say("Great! It's a rematch")
+        elif response == "no":
+            tts.say("Alright! See you next time")
+        return jsonify({"message": response})  # Simulate responses
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001)  # Different port from server.py
