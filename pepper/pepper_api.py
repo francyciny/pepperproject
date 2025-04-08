@@ -1,6 +1,9 @@
 import time
 import random
 from flask import Flask, request, jsonify
+import sys
+import qi 
+from authentication import AuthenticatorFactory
 
 try:
     from naoqi import ALProxy  # Import the real SDK if available
@@ -32,12 +35,23 @@ class MockALProxy:
 PEPPER_IP = "127.0.0.1"  # Virtual robot IP, change when using real robot!!
 PORT = 9559  # Change when using real robot!!
 
+# PORT = 9503 # Port for the real robot, always the same 
+# PEPPER_IP = "172.20.10.2" # Real robot IP, might change each time there is a connection
+
+"""
+app = qi.Application(sys.argv, url="tcps://" + PEPPER_IP + ":" + str(PORT))
+logins = ("nao", "vision@2024")
+factory = AuthenticatorFactory(*logins)
+app.session.setClientAuthenticatorFactory(factory) 
+app.start()
+"""
+
 if ALProxy:
     print("NAOqi SDK found, using real Pepper")
     tts = ALProxy("ALTextToSpeech", PEPPER_IP, PORT)  # Speech
     motion = ALProxy("ALMotion", PEPPER_IP, PORT)  # Movement
-    leds = ALProxy("ALLeds", PEPPER_IP, PORT)  # LED control
-    animation_player = ALProxy("ALAnimationPlayer", PEPPER_IP, PORT) # Animations from Choregraphe
+    leds = ALProxy("ALLeds", PEPPER_IP, PORT)  # LED control 
+    # animation_player = ALProxy("ALAnimationPlayer", PEPPER_IP, PORT) # Animations from Choregraphe
     try:
         # Try to connect to real speech recognition, when using real robot should go
         speech_recognition = ALProxy("ALSpeechRecognition", PEPPER_IP, PORT)
@@ -49,7 +63,7 @@ if ALProxy:
         # If speech recognition is not found, use mock version
         speech_recognition_found = False
         print("ALSpeechRecognition not found! Using mock speech recognition.")
-    memory = ALProxy("ALMemory", PEPPER_IP, PORT) # Memory
+    # memory = ALProxy("ALMemory", PEPPER_IP, PORT) # Memory
 else:
     print("!! NAOqi SDK not found, using mock Pepper")
     tts = MockALProxy("ALTextToSpeech", PEPPER_IP, PORT)
@@ -106,7 +120,8 @@ def announce_winner():
         motion.setAngles("HipRoll", -5 , 0.1)
     elif winner == "X":
         tts.say("You won! Well played!")
-        leds.fadeRGB("FaceLeds", "blue", 0.5) 
+        color = int(0) << 16 | int(255) << 8 | int(0)  # RGB values (0,255,0) for green
+        leds.fadeRGB("FaceLeds", color, 0.5) 
         motion.setAngles("HeadPitch", 1, 0.2)
         ## leds.fadeRGB("FaceLeds", int("0000FF", 16), 1.0)
         ## leds.fadeRGB("FaceLeds", 0, 0, 255, 1.0)  # RGB values (0,0,255) for blue
