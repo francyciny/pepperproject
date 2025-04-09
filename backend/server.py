@@ -121,39 +121,48 @@ def get_robot_move():
     return jsonify({"message": "Not robot's turn"})
 
 # Social interaction routes 
-@app.route("/get_yes_no", methods=["POST"])
+@app.route("/get_yes_no", methods=["GET"])
 def get_yes_no():
-    data = request.get_json()
-    input = data.get("input")
-    response = requests.post(f"{PEPPER_API_URL}/get_yes_no", json={"input": input})
-    data = response.json()  
-    print("Received from Pepper API:", data)  # Debugging 
-
-    answer = data.get("message", "unclear")  
-    return jsonify({"answer": answer})  
-
-@app.route("/get_name", methods=["GET"])
-def get_name():
-    response = requests.get(f"{PEPPER_API_URL}/get_name")
-    data = response.json()
-    print("Received from Pepper API:", data)  # Debugging 
-    name = data.get("message", "unclear")
-    return jsonify({"name": name})
+    requests.post(f"{PEPPER_API_URL}/speak", json={"text": "Do you want to play a game? Press yes or no."})  
+    return jsonify({"answer": "Robot has asked to play."})  
 
 @app.route("/greet_user", methods=["GET"])
 def greet_user():
-    response = requests.get(f"{PEPPER_API_URL}/greet_user")
-    data = response.json()
-    greeting = data.get("message", "unclear")
-    return jsonify({"greeting": greeting})
+    requests.post(f"{PEPPER_API_URL}/speak", json={"text": "Hello! I am Pepper, your friendly robot. I'm here to play Tic-Tac-Toe with you."})
+    requests.post(f"{PEPPER_API_URL}/speak", json={"text": "What's your name? Type it in my tablet."})
+    return jsonify({"message": "Robot has greeted the user."})
 
 @app.route("/play_again", methods=["GET"])
 def play_again():
-    response = requests.get(f"{PEPPER_API_URL}/play_again")
-    data = response.json()
-    print("Received from Pepper API:", data)  # Debugging 
-    answer = data.get("message", "unclear")
-    return jsonify({"answer": answer})
+    requests.post(f"{PEPPER_API_URL}/speak", json={"text": "Do you want to play again? If yes press rematch, if no press quit."})
+    return jsonify({"answer": "Robot has asked to play again."})
+
+@app.route("/get_username", methods=["POST"])
+def get_username():
+    data = request.get_json()
+    username = data.get("name")
+    requests.post(f"{PEPPER_API_URL}/speak", json={"text": f"Nice to meet you, {username}!"})
+    return jsonify({"message": "Username received", "username": username})
+
+@app.route("/game_response", methods=["POST"])
+def game_response():
+    data = request.get_json()
+    response = data.get("response")
+    if response == "yes":
+        requests.post(f"{PEPPER_API_URL}/speak", json={"text": "Great! Let's play!"})
+    else:
+        requests.post(f"{PEPPER_API_URL}/speak", json={"text": "Alright! Press the button when you want to play!"})
+    return jsonify({"message": "Response received"})
+
+@app.route("/restart_game", methods=["POST"])
+def restart_game():
+    data = request.get_json()
+    input = data.get("input")
+    if input == "rematch":
+        requests.post(f"{PEPPER_API_URL}/speak", json={"text": "Great! It's a rematch"})
+    else:
+        requests.post(f"{PEPPER_API_URL}/speak", json={"text": "Alright! See you next time"})
+    return jsonify({"message": "Game restarted"})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
