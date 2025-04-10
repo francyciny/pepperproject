@@ -1,7 +1,6 @@
 import time
 import random
 from flask import Flask, request, jsonify
-from flask_cors import CORS
 import sys
 import qi 
 from authentication import AuthenticatorFactory
@@ -12,7 +11,6 @@ except ImportError:
     ALProxy = None  # If the SDK isn't installed, use mock functions
 
 app = Flask(__name__)
-CORS(app)
 
 class MockALProxy:
     """Mock functions for testing without a robot."""
