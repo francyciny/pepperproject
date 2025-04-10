@@ -7,7 +7,7 @@ import time
 app = Flask(__name__)
 CORS(app, origins=["https://pepperproject.netlify.app", "https://localhost:5173"])
 
-PEPPER_API_URL = "http://127.0.0.1:5001"  # To change when using real robot!!
+PEPPER_API_URL = "https://pepperbackend.onrender.com"  # To change when using real robot!!
 
 # Tic-Tac-Toe Board
 board = ["" for _ in range(9)]
