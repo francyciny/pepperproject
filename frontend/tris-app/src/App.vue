@@ -82,7 +82,7 @@ export default {
 
     async greetUser(){
       try {
-        await axios.get("http://127.0.0.1:8080/greet_user");
+        await axios.get("https://pepperproject.onrender.com/greet_user");
         this.showTitleScreen = false;
         this.showNameInput = true;
       } catch (error) {
@@ -92,7 +92,7 @@ export default {
 
     async submitName() {
       try {
-        await axios.post("http://127.0.0.1:8080/get_username", { name: this.userName });
+        await axios.post("https://pepperproject.onrender.com/get_username", { name: this.userName });
         this.getYesNoResponse();
       }catch (error) {
       console.error("Error getting user name:", error);
@@ -103,7 +103,7 @@ export default {
 
     async getYesNoResponse() {
       try {
-        const response = await axios.get("http://127.0.0.1:8080/get_yes_no");
+        const response = await axios.get("https://pepperproject.onrender.com/get_yes_no");
         this.showNameInput = false;
         this.showYesNo = true;
       } catch (error) {
@@ -112,12 +112,12 @@ export default {
     },
 
     async gameYes() {
-      await axios.post("http://127.0.0.1:8080/game_response", { response: "yes" });
+      await axios.post("https://pepperproject.onrender.com/game_response", { response: "yes" });
       this.startGame();
     },
 
     async gameNo(){
-      await axios.post("http://127.0.0.1:8080/game_response", { response: "no" });
+      await axios.post("https://pepperproject.onrender.com/game_response", { response: "no" });
       this.showYesNo = false;
       this.showIntro = true;
     },
@@ -125,7 +125,7 @@ export default {
     async startGame() {
       this.showIntro = false;
       this.showYesNo = false;
-      const response = await axios.post("http://127.0.0.1:8080/start_game");
+      const response = await axios.post("https://pepperproject.onrender.com/start_game");
       this.currentPlayer = response.data.first_player;
       this.board = Array(9).fill(""); 
       this.winner = null;
@@ -139,12 +139,12 @@ export default {
     async makeMove(index) {
       if (this.board[index] !== "" || this.winner || this.currentPlayer !== "X") return;
       try {
-        const response = await axios.post("http://127.0.0.1:8080/update_board", { index });
+        const response = await axios.post("https://pepperproject.onrender.com/update_board", { index });
         this.board = response.data.board;
 
         if (response.data.message === "Game over") {
           this.winner = response.data.winner;
-          await axios.get("http://127.0.0.1:8080/play_again");
+          await axios.get("https://pepperproject.onrender.com/play_again");
           return;  
         }
 
@@ -158,12 +158,12 @@ export default {
     async getRobotMove() {
       if (this.winner || this.currentPlayer !== "O") return;
       try {
-        const response = await axios.get("http://127.0.0.1:8080/get_robot_move");
+        const response = await axios.get("https://pepperproject.onrender.com/get_robot_move");
         this.board = response.data.board;
 
         if (response.data.message === "Game over") {
           this.winner = response.data.winner;
-          await axios.get("http://127.0.0.1:8080/play_again");
+          await axios.get("https://pepperproject.onrender.com/play_again");
           return;  
         }
 
@@ -174,8 +174,8 @@ export default {
     },
 
     async restartGame(input) {
-      await axios.post("http://127.0.0.1:8080/restart_game", { input });
-      const response = await axios.post("http://127.0.0.1:8080/start_game");
+      await axios.post("https://pepperproject.onrender.com/restart_game", { input });
+      const response = await axios.post("https://pepperproject.onrender.com/start_game");
       this.currentPlayer = response.data.first_player;
       this.board = Array(9).fill("");
       this.winner = null;
@@ -187,7 +187,7 @@ export default {
     }, 
 
     async quitGame(input) {
-      await axios.post("http://127.0.0.1:8080/restart_game", { input });
+      await axios.post("https://pepperproject.onrender.com/restart_game", { input });
       this.showIntro = false;
       this.board = Array(9).fill("");
       this.winner = null;
