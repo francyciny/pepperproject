@@ -5,7 +5,7 @@ import requests
 import time  
 
 app = Flask(__name__)
-CORS(app, origins=["https://pepperproject.netlify.app", "https://localhost:5173"])
+CORS(app)
 
 PEPPER_API_URL = "http://127.0.0.1:5001"  # To change when using real robot!!
 
@@ -67,8 +67,9 @@ def start_game():
 def update_board():
     global current_player
     data = request.get_json()
-    index = data.get("index")
-    
+    print(data)
+    index = data.get("indice")
+    print(index)
     if index is None or not (0 <= index < 9):
         return jsonify({"message": "Invalid move: Out of range"}), 400
 
@@ -128,8 +129,14 @@ def get_yes_no():
 
 @app.route("/greet_user", methods=["GET"])
 def greet_user():
-    requests.post(f"{PEPPER_API_URL}/speak", json={"text": "Hello! I am Pepper, your friendly robot. I'm here to play Tic-Tac-Toe with you."})
-    requests.post(f"{PEPPER_API_URL}/speak", json={"text": "What's your name? Type it in my tablet."})
+    try:
+        print("aooo")
+        requests.post(f"{PEPPER_API_URL}/speak", json={"text": "Hello! I am Pepper, your friendly robot. I'm here to play Tic-Tac-Toe with you."})
+        requests.post(f"{PEPPER_API_URL}/speak", json={"text": "What's your name? Type it in my tablet."})
+    except:
+        print("Error communicating with Pepper API")
+        
+    
     return jsonify({"message": "Robot has greeted the user."})
 
 @app.route("/play_again", methods=["GET"])
