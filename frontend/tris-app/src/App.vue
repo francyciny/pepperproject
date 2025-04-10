@@ -2,7 +2,7 @@
   <div id="app">
     <!-- Title Screen -->
     <div v-if="showTitleScreen" class="title-screen">
-      <h1>HELLO</h1>
+      <h1 id="hello">HELLO</h1>
     </div>
 
     <!-- Name Input -->
@@ -82,11 +82,13 @@ export default {
 
     async greetUser(){
       try {
-        await axios.get("https://fb77-78-211-91-149.ngrok-free.app/greet_user", {headers: {'ngrok-skip-browser-warning': 'true'}});
+        const response = await axios.get("https://fb77-78-211-91-149.ngrok-free.app/greet_user", {headers: {'ngrok-skip-browser-warning': 'true'}});
+        document.getElementById("hello").innerText = response.data.message;
         console.log("aooo");
         this.showTitleScreen = false;
         this.showNameInput = true;
       } catch (error) {
+        document.getElementById("hello").innerText = "ERRORE: " + error;
         console.error("Error greeting:", error);
       }
     },
