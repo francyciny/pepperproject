@@ -5,7 +5,7 @@ import requests
 import time  
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=["https://pepperproject.netlify.app", "https://localhost:5173"])
 
 PEPPER_API_URL = "http://127.0.0.1:5001"  # To change when using real robot!!
 
