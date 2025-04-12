@@ -2,25 +2,32 @@
   <div id="app">
     <!-- Title Screen -->
     <div v-if="showTitleScreen" class="title-screen">
-      <h1 id="hello">HELLO</h1>
+      <h1 id="hello" class="robot-title">HELLO</h1>
     </div>
 
     <!-- Name Input -->
-    <div v-if="showNameInput">
-      <input type="text" v-model="userName" placeholder="Enter your name">
-      <button @click="submitName">Submit</button>
+    <div v-if="showNameInput" class="name-input-section">
+      <input
+        type="text"
+        v-model="userName"
+        class="name-input"
+        placeholder="Enter your name"
+        @keyup.enter="submitName"
+      />
+      <button class="restart-button" @click="submitName">Submit</button>
     </div>
 
     <!-- Yes/No Question -->
-    <div v-if="showYesNo">
-      <button @click="gameYes">Yes</button>
-      <button @click="gameNo">No</button>
+    <div v-if="showYesNo" class="yes-no-section">
+      <button class="yes-button" @click="gameYes">Yes</button>
+      <button class="no-button" @click="gameNo">No</button>
     </div>
 
     <!-- Introductory Page -->
     <div v-if="showIntro && !showTitleScreen" class="intro-section">
       <p class="welcome-text">Hello, {{ userName }}! Do you want to play a game?</p>
       <button class="start-button" @click="startGame">Start Game</button>
+      <button class="quit-button" @click="quitGame('quit')">Quit</button>
     </div>
 
     <!-- Game Page -->
@@ -29,10 +36,12 @@
 
       <!-- Tic-Tac-Toe Board -->
       <div v-if="gameStarted" class="board">
-        <div v-for="(cell, index) in board" 
-             :key="index" 
-             class="cell" 
-             @click="makeMove(index)">
+        <div
+          v-for="(cell, index) in board"
+          :key="index"
+          class="cell"
+          @click="makeMove(index)"
+        >
           {{ cell }}
         </div>
       </div>
@@ -207,39 +216,141 @@ export default {
 </script>
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+
 /* General Styles */
 #app {
   text-align: center;
   font-family: Arial, sans-serif;
-  margin-top: 50px;
+  margin: 0;
 }
 
+/* Title Screen */
 .title-screen {
-  font-size: 50px;
-  font-weight: bold;
+  height: 100vh;
+  width: 100vw;
+  background-color: #ffffff;
+  color: #000000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.robot-title {
+  font-size: 12vw;
+  font-family: 'Orbitron', monospace;
+  font-weight: 900;
+  text-shadow: 0 0 10px #00bbff, 0 0 20px #004cff;
+  margin: 0;
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    text-shadow: 0 0 10px #00bbff, 0 0 20px #004cff;
+  }
+  50% {
+    text-shadow: 0 0 20px #00ffff, 0 0 30px #00ffff;
+  }
+}
+
+/* Name Input Section */
+.name-input-section {
   height: 100vh;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
 }
 
-.intro-section {
-  margin-bottom: 30px;
+.name-input {
+  padding: 22px 25px;       
+  font-size: 26px;          
+  width: 360px;             
+  margin-bottom: 20px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
 }
 
-.welcome-text {
-  font-size: 20px;
-  margin-bottom: 10px;
-}
-
-/* Buttons */
 button {
-  padding: 12px 20px;
-  font-size: 18px;
+  padding: 14px 25px;
+  font-size: 20px;
   border: none;
   cursor: pointer;
   border-radius: 5px;
   transition: 0.3s;
+  margin: 10px;
+}
+
+/* Submit / Restart Button */
+button.restart-button {
+  background-color: #008CBA;
+  color: white;
+  padding: 22px 36px; /* increased padding */
+  font-size: 28px;     /* increased font size */
+}
+
+button.restart-button:hover {
+  background-color: #007bb5;
+}
+
+/* Yes/No Section */
+.yes-no-section {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+  width: 100vw;
+}
+
+.yes-button, .no-button {
+  flex: 1;
+  height: 100%;
+  font-size: 32px;
+  font-weight: bold;
+  border-radius: 0;
+  color: white;
+  border: none;
+  transition: background-color 0.3s ease;
+}
+
+.yes-button {
+  background-color: #4CAF50;
+}
+
+.yes-button:hover {
+  background-color: #45a049;
+}
+
+.no-button {
+  background-color: #f44336;
+}
+
+.no-button:hover {
+  background-color: #d32f2f;
+}
+
+/* Introductory Page */
+.intro-section {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.welcome-text {
+  font-size: 32px;
+  margin-bottom: 40px;
+  font-weight: bold;
+}
+
+.start-button,
+.quit-button {
+  font-size: 24px;
+  padding: 18px 28px;
+  margin: 10px;
 }
 
 .start-button {
@@ -251,33 +362,23 @@ button {
   background-color: #45a049;
 }
 
-.restart-button {
-  background-color: #008CBA;
-  color: white;
-  margin-top: 20px;
-}
-
-.restart-button:hover {
-  background-color: #007bb5;
-}
-
 .quit-button {
   background-color: #ff4c4c;
   color: white;
-  margin-top: 20px;
+  padding: 14px 25px;  /* smaller like old restart */
+  font-size: 20px;
 }
 
 .quit-button:hover {
   background-color: #e60000;
 }
 
-/* Current Turn text */
+/* Game Board */
 .turn-text {
-  font-size: 20px;
+  font-size: 22px;
   margin-bottom: 15px;
 }
 
-/* Game Board */
 .board {
   display: grid;
   grid-template-columns: repeat(3, 100px);
@@ -292,7 +393,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
+  font-size: 28px;
   border: 2px solid black;
   cursor: pointer;
   background-color: #f9f9f9;
@@ -303,13 +404,15 @@ button {
   background-color: #e0e0e0;
 }
 
-.winner-text {
-  font-size: 24px;
-  font-weight: bold;
-  margin-top: 20px;
+/* Game Over */
+.game-over-section {
+  margin-top: 30px;
 }
 
-.game-over-section {
-  margin-top: 20px;
+.winner-text {
+  font-size: 34px;
+  font-weight: bold;
+  margin-top: 30px;
 }
 </style>
+
