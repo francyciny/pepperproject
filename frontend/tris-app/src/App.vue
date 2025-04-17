@@ -105,7 +105,7 @@ export default {
 
     async submitName() {
       try {
-        await axios.post("https://fb77-78-211-91-149.ngrok-free.app/get_username", { name: this.userName }, {headers: {'ngrok-skip-browser-warning': 'true'}});
+        await axios.post(this.url +"/get_username", { name: this.userName }, {headers: {'ngrok-skip-browser-warning': 'true'}});
         this.getYesNoResponse();
       }catch (error) {
       console.error("Error getting user name:", error);
@@ -116,7 +116,7 @@ export default {
 
     async getYesNoResponse() {
       try {
-        const response = await axios.get("https://fb77-78-211-91-149.ngrok-free.app/get_yes_no", {headers: {'ngrok-skip-browser-warning': 'true'}});
+        const response = await axios.get(this.url +"/get_yes_no", {headers: {'ngrok-skip-browser-warning': 'true'}});
         console.log(response.data);
         this.showNameInput = false;
         this.showYesNo = true;
@@ -126,12 +126,12 @@ export default {
     },
 
     async gameYes() {
-      await axios.post("https://fb77-78-211-91-149.ngrok-free.app/game_response", { response: "yes"} , {headers: {'ngrok-skip-browser-warning': 'true'}});
+      await axios.post(this.url +"/game_response", { response: "yes"} , {headers: {'ngrok-skip-browser-warning': 'true'}});
       this.startGame();
     },
 
     async gameNo(){
-      await axios.post("https://fb77-78-211-91-149.ngrok-free.app/game_response", {response: "no"} , {headers: {'ngrok-skip-browser-warning': 'true'}});
+      await axios.post(this.url +"/game_response", {response: "no"} , {headers: {'ngrok-skip-browser-warning': 'true'}});
       this.showYesNo = false;
       this.showIntro = true;
     },
@@ -139,7 +139,7 @@ export default {
     async startGame() {
       this.showIntro = false;
       this.showYesNo = false;
-      const response = await axios.post("https://fb77-78-211-91-149.ngrok-free.app/start_game", {headers: {'ngrok-skip-browser-warning': 'true'}});
+      const response = await axios.post(this.url +"/start_game", {headers: {'ngrok-skip-browser-warning': 'true'}});
       this.currentPlayer = response.data.first_player;
       this.board = Array(9).fill(""); 
       this.winner = null;
@@ -153,13 +153,13 @@ export default {
     async makeMove(index) {
       if (this.board[index] !== "" || this.winner || this.currentPlayer !== "X") return;
       try {
-        const response = await axios.post("https://fb77-78-211-91-149.ngrok-free.app/update_board", {indice: index} , {headers: {'ngrok-skip-browser-warning': 'true'}});
+        const response = await axios.post(this.url +"/update_board", {indice: index} , {headers: {'ngrok-skip-browser-warning': 'true'}});
         console.log(response.data);
         this.board = response.data.board;
 
         if (response.data.message === "Game over") {
           this.winner = response.data.winner;
-          await axios.get("https://fb77-78-211-91-149.ngrok-free.app/play_again", {headers: {'ngrok-skip-browser-warning': 'true'}});
+          await axios.get(this.url +"/play_again", {headers: {'ngrok-skip-browser-warning': 'true'}});
           return;  
         }
 
@@ -173,13 +173,13 @@ export default {
     async getRobotMove() {
       if (this.winner || this.currentPlayer !== "O") return;
       try {
-        const response = await axios.get("https://fb77-78-211-91-149.ngrok-free.app/get_robot_move", {headers: {'ngrok-skip-browser-warning': 'true'}});
+        const response = await axios.get(this.url +"/get_robot_move", {headers: {'ngrok-skip-browser-warning': 'true'}});
         console.log(response.data);
         this.board = response.data.board;
 
         if (response.data.message === "Game over") {
           this.winner = response.data.winner;
-          await axios.get("https://fb77-78-211-91-149.ngrok-free.app/play_again", {headers: {'ngrok-skip-browser-warning': 'true'}});
+          await axios.get(this.url +"/play_again", {headers: {'ngrok-skip-browser-warning': 'true'}});
           return;  
         }
 
@@ -190,8 +190,8 @@ export default {
     },
 
     async restartGame(input) {
-      await axios.post("https://fb77-78-211-91-149.ngrok-free.app/restart_game", {input} , {headers: {'ngrok-skip-browser-warning': 'true'}});
-      const response = await axios.post("https://fb77-78-211-91-149.ngrok-free.app/start_game", {headers: {'ngrok-skip-browser-warning': 'true'}});
+      await axios.post(this.url +"/restart_game", {input} , {headers: {'ngrok-skip-browser-warning': 'true'}});
+      const response = await axios.post(this.url +"/start_game", {headers: {'ngrok-skip-browser-warning': 'true'}});
       this.currentPlayer = response.data.first_player;
       this.board = Array(9).fill("");
       this.winner = null;
@@ -203,7 +203,7 @@ export default {
     }, 
 
     async quitGame(input) {
-      await axios.post("https://fb77-78-211-91-149.ngrok-free.app/restart_game", {input} , {headers: {'ngrok-skip-browser-warning': 'true'}});
+      await axios.post(this.url +"/restart_game", {input} , {headers: {'ngrok-skip-browser-warning': 'true'}});
       this.showIntro = false;
       this.board = Array(9).fill("");
       this.winner = null;
