@@ -92,7 +92,7 @@ export default {
 
     async greetUser(){
       try {
-        const response = await axios.get(url +"/greet_user", {headers: {'ngrok-skip-browser-warning': 'true'}});
+        const response = await axios.get(this.url +"/greet_user", {headers: {'ngrok-skip-browser-warning': 'true'}});
         document.getElementById("hello").innerText = response.data.message;
         console.log("aooo");
         this.showTitleScreen = false;
