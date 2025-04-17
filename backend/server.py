@@ -7,7 +7,7 @@ import time
 app = Flask(__name__)
 CORS(app)
 
-PEPPER_API_URL = "http://127.0.0.1:5001"  # To change when using real robot!!
+PEPPER_API_URL = "http://127.0.0.1:5001"  
 
 # Tic-Tac-Toe Board
 board = ["" for _ in range(9)]
@@ -77,17 +77,12 @@ def update_board():
         return jsonify({"message": "Invalid move: Spot taken"}), 400
 
     board[index] = "X"  # Human moves
-    winner = check_winner()
+    winner = check_winner() 
     if winner:
-        requests.post(f"{PEPPER_API_URL}/announce_winner", json={"winner": winner})
-        time.sleep(3)
-        requests.post(f"{PEPPER_API_URL}/resting_position", json={"winner": winner})
+        print("Winner: ", winner)
         return jsonify({"message": "Game over", "winner": winner, "board": board})
-
+        
     current_player = "O"
-    
-    # Announce Pepper's turn before it plays
-    requests.post(f"{PEPPER_API_URL}/announce_turn", json={"player": current_player})
 
     return jsonify({"message": "Move registered", "board": board})
 
@@ -103,9 +98,6 @@ def get_robot_move():
             board[move] = "O"
             winner = check_winner()
             if winner:
-                requests.post(f"{PEPPER_API_URL}/announce_winner", json={"winner": winner})
-                time.sleep(3)
-                requests.post(f"{PEPPER_API_URL}/resting_position", json={"winner": winner})
                 return jsonify({"message": "Game over", "winner": winner, "board": board})
             
             current_player = "X"
@@ -113,9 +105,6 @@ def get_robot_move():
             # Make Pepper say a random comment, i have to maybe change this later
             comments = ["Nice move!", "You're a tough opponent!", "That was smart!", "Hmm... tricky!"]
             requests.post(f"{PEPPER_API_URL}/speak", json={"text": random.choice(comments)})
-
-            # Announce the human's turn after Pepper moves
-            requests.post(f"{PEPPER_API_URL}/announce_turn", json={"player": current_player})
 
             return jsonify({"message": "Robot moved", "move": move, "board": board})
     
@@ -170,6 +159,27 @@ def restart_game():
     else:
         requests.post(f"{PEPPER_API_URL}/speak", json={"text": "Alright! See you next time"})
     return jsonify({"message": "Game restarted"})
+
+@app.route("/announce_turn", methods=["POST"])
+def announce_turn():
+    data = request.get_json()
+    player = data.get("player")
+    if player == "X":
+        requests.post(f"{PEPPER_API_URL}/speak", json={"text": "It's your turn!"}) #change to make random
+    else:
+        requests.post(f"{PEPPER_API_URL}/speak", json={"text": "Let me think..."}) #change to make random
+    return jsonify({"message": "Turn announced", "player": player})
+
+@app.route("/announce_winner", methods=["POST"])
+def announce_winner():
+    data = request.get_json()
+    winner = data.get("winner")
+
+    requests.post(f"{PEPPER_API_URL}/announce_winner", json={"winner": winner})
+    time.sleep(3)
+    requests.post(f"{PEPPER_API_URL}/resting_position", json={"winner": winner})
+
+    return jsonify({"message": "Winner announced", "winner": winner})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)

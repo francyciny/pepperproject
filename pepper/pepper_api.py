@@ -39,11 +39,11 @@ PORT = 9559  # Change when using real robot!!
 # PEPPER_IP = "172.20.10.2" # Real robot IP, might change each time there is a connection
 
 """
-app = qi.Application(sys.argv, url="tcps://" + PEPPER_IP + ":" + str(PORT))
+app2 = qi.Application(sys.argv, url="tcps://" + PEPPER_IP + ":" + str(PORT))
 logins = ("nao", "vision@2024")
 factory = AuthenticatorFactory(*logins)
-app.session.setClientAuthenticatorFactory(factory) 
-app.start()
+app2.session.setClientAuthenticatorFactory(factory) 
+app2.start()
 """
 
 if ALProxy:
@@ -93,7 +93,7 @@ def announce_turn():
     if player == "X":
         tts.say("It's your turn!")
     else:
-        tts.say("Let me think...")
+        tts.say("It's my turn!")
     return jsonify({"message": "Turn announced", "player": player})
 
 @app.route("/announce_winner", methods=["POST"])
@@ -103,21 +103,14 @@ def announce_winner():
     
     if winner == "O":
         tts.say("I won! Good game!")
-        motion.openHand("LHand")
-        motion.openHand("RHand")
-        motion.setAngles("HipRoll", 5 , 0.1)
-        time.sleep(2)
-        motion.setAngles("HipRoll", 0 , 0.1)
-        time.sleep(2)
-        motion.setAngles("HipRoll", -5 , 0.1)
-        time.sleep(2)
-        motion.setAngles("HipRoll", 0 , 0.1)
-        time.sleep(2)
-        motion.setAngles("HipRoll", 5 , 0.1)
-        time.sleep(2)
-        motion.setAngles("HipRoll", 0 , 0.1)
-        time.sleep(2)
-        motion.setAngles("HipRoll", -5 , 0.1)
+        motion.setAngles("LElbowRoll", 6, 0.1)
+        motion.setAngles("HipRoll", 2 , 0.5)
+        time.sleep(1)
+        motion.setAngles("HipRoll", -2 , 0.5)
+        time.sleep(1)
+        motion.setAngles("HipRoll", 2 , 0.5)
+        time.sleep(1)
+        motion.setAngles("HipRoll", -2 , 0.5)
     elif winner == "X":
         tts.say("You won! Well played!")
         color = int(0) << 16 | int(255) << 8 | int(0)  # RGB values (0,255,0) for green
@@ -126,7 +119,7 @@ def announce_winner():
         ## leds.fadeRGB("FaceLeds", int("0000FF", 16), 1.0)
         ## leds.fadeRGB("FaceLeds", 0, 0, 255, 1.0)  # RGB values (0,0,255) for blue
         ## leds.fadeRGB("FaceLeds", 0x0000FF, 1.0)  
-    else:
+    elif winner == "draw":
         tts.say("It's a draw!")
         motion.setAngles("HeadYaw", 0.3, 0.2)
         motion.setAngles("HeadYaw", -0.6, 0.2)
@@ -140,12 +133,12 @@ def announce_winner():
 def resting_position():
     print("Moving Pepper to resting position")  # Debugging 
     
-    motion.setAngles("RShoulderPitch", 1.8, 0.1)
-    motion.setAngles("LShoulderPitch", 1.8, 0.1)
-    motion.setAngles("HeadYaw", 0.0, 0.2)
-    motion.setAngles("RWristYaw", 0.0, 0.2)  
-    motion.setAngles("HeadPitch", 0.0, 0.2)
-    motion.setAngles("HipRoll", 0, 0.2)  
+    motion.setAngles("RShoulderPitch", 1.8, 0.5)
+    motion.setAngles("LShoulderPitch", 1.8, 0.5)
+    motion.setAngles("HeadYaw", 0.0, 0.5)
+    motion.setAngles("RWristYaw", 0.0, 0.5)  
+    motion.setAngles("HeadPitch", 0.0, 0.5)
+    motion.setAngles("HipRoll", 0, 0.5)  
     
 
     return jsonify({"message": "Moving to resting position"})

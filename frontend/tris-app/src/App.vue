@@ -75,7 +75,7 @@ export default {
       board: Array(9).fill(""),
       currentPlayer: "",
       winner: null,
-      url: "https://1c70-78-211-157-39.ngrok-free.app"
+      url: "https://fb77-78-211-91-149.ngrok-free.app" // "https://1c70-78-211-157-39.ngrok-free.app"
     };
   },
   mounted() {
@@ -159,11 +159,15 @@ export default {
 
         if (response.data.message === "Game over") {
           this.winner = response.data.winner;
+          console.log("Winner:", this.winner);
+          await axios.post(this.url +"/announce_winner", {winner: this.winner} , {headers: {'ngrok-skip-browser-warning': 'true'}});
           await axios.get(this.url +"/play_again", {headers: {'ngrok-skip-browser-warning': 'true'}});
           return;  
         }
 
         this.currentPlayer = "O";
+        await axios.post(this.url +"/announce_turn", {player: this.currentPlayer} , {headers: {'ngrok-skip-browser-warning': 'true'}});
+
         setTimeout(() => this.getRobotMove(), 1000);
       } catch (error) {
         console.error("Invalid move:", error);
@@ -179,11 +183,14 @@ export default {
 
         if (response.data.message === "Game over") {
           this.winner = response.data.winner;
+          await axios.post(this.url +"/announce_winner", {winner: this.winner} , {headers: {'ngrok-skip-browser-warning': 'true'}});
           await axios.get(this.url +"/play_again", {headers: {'ngrok-skip-browser-warning': 'true'}});
           return;  
         }
 
         this.currentPlayer = "X";
+        await axios.post(this.url +"/announce_turn", {player: this.currentPlayer} , {headers: {'ngrok-skip-browser-warning': 'true'}});
+
       } catch (error) {
         console.error("Error getting robot move:", error);
       }
