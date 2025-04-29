@@ -33,11 +33,11 @@ class MockALProxy:
         print("[Mock] Pepper's {} would fade to {} in {} seconds".format(led, color, duration))
 
 # Initialize Pepper or Mock
-PEPPER_IP = "127.0.0.1"  # Virtual robot IP, change when using real robot!!
-PORT = 9559  # Change when using real robot!!
+# PEPPER_IP = "127.0.0.1"  # Virtual robot IP, change when using real robot!!
+# PORT = 9559  # Change when using real robot!!
 
-# PORT = 9503 # Port for the real robot, always the same 
-# PEPPER_IP = "172.20.10.2" # Real robot IP, might change each time there is a connection
+PORT = 9503 # Port for the real robot, always the same 
+PEPPER_IP = "172.20.10.2" # Real robot IP, might change each time there is a connection
 
 """
 app2 = qi.Application(sys.argv, url="tcps://" + PEPPER_IP + ":" + str(PORT))
