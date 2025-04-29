@@ -26,47 +26,6 @@ def check_winner():
         return "draw"
     return None
 
-def minimax(board_state, is_maximizing):
-    winner = check_winner()
-    if winner == "O":
-        return 1  # robot wins
-    elif winner == "X":
-        return -1  # human wins
-    elif all(cell != "" for cell in board_state):
-        return 0  # draw
-
-    if is_maximizing:
-        best_score = -float("inf")
-        for i in range(9):
-            if board_state[i] == "":
-                board_state[i] = "O"
-                score = minimax(board_state, False)
-                board_state[i] = ""
-                best_score = max(score, best_score)
-        return best_score
-    else:
-        best_score = float("inf")
-        for i in range(9):
-            if board_state[i] == "":
-                board_state[i] = "X"
-                score = minimax(board_state, True)
-                board_state[i] = ""
-                best_score = min(score, best_score)
-        return best_score
-
-def score_move(index, player):
-    if board[index] != "":
-        return None  # already taken
-
-    board_copy = board.copy()
-    board_copy[index] = player
-
-    # Minimax assumes robot is 'O' (maximizing)
-    if player == "X":
-        return minimax(board_copy, True)  # robot moves next
-    else:
-        return minimax(board_copy, False)  # human moves next
-
 def get_best_move():
     available_moves = [i for i, v in enumerate(board) if v == ""]
     if not available_moves:
@@ -86,17 +45,32 @@ def get_best_move():
             board[move] = ""
     return random.choice(available_moves)
 
-def get_best_human_moves():
-    scores = []
-    for i in range(9):
-        if board[i] == "":
-            score = score_move(i, "X")
-            scores.append((i, score))
+def get_optimal_human_moves():
+    available_moves = [i for i, v in enumerate(board) if v == ""]
+    if not available_moves:
+        return set()
 
-    max_score = max(score for _, score in scores)
-    best_moves = [i for i, score in scores if score == max_score]
+    optimal_moves = set()
 
-    return best_moves
+    # First: check all moves that let the human win immediately
+    for move in available_moves:
+        board[move] = "X"
+        if check_winner() == "X":
+            optimal_moves.add(move)
+        board[move] = ""
+
+    if optimal_moves:
+        return optimal_moves
+
+    # Second: check all moves that block the robot from winning
+    for move in available_moves:
+        board[move] = "O"
+        if check_winner() == "O":
+            optimal_moves.add(move)
+        board[move] = ""
+
+    # If nothing urgent, all remaining are equally fine
+    return optimal_moves if optimal_moves else set(available_moves)
 
 @app.route("/", methods=["GET"])
 def home():
@@ -128,38 +102,42 @@ def update_board():
     if board[index] != "":
         return jsonify({"message": "Invalid move: Spot taken"}), 400
 
-    # Evaluate optimality before registering the move
-    best_moves = get_best_human_moves()
-    is_optimal = index in best_moves
+    # Get optimal human moves based on current board
+    optimal_moves = get_optimal_human_moves()
+    is_optimal = index in optimal_moves
 
     # Apply the move
     board[index] = "X"
     winner = check_winner()
     if winner:
-        return jsonify({"message": "Game over", "winner": winner, "board": board})
+        return jsonify({
+            "message": "Game over",
+            "winner": winner,
+            "board": board
+        })
 
     current_player = "O"
 
-    # Choose comment based on optimality
+    # Speak based on optimality
     if is_optimal:
         comment = random.choice([
-            "Strong move!",
-            "That was optimal!",
-            "Well played.",
-            "You're playing like a machine!"
+            "Nice move!",
+            "That was the best you could do.",
+            "Good call.",
+            "You're making sharp choices!"
         ])
     else:
         comment = random.choice([
-            "Hmm, not the best move.",
-            "You missed something.",
-            "I saw a better option.",
-            "Are you sure about that one?"
+            "Interesting choice... not optimal though.",
+            "I would have gone somewhere else.",
+            "You left an opening there.",
+            "Hmm, not the best move."
         ])
 
-    # Robot speaks
     requests.post(f"{PEPPER_API_URL}/speak", json={"text": comment})
 
     return jsonify({"message": "Move registered", "board": board})
+
 
 @app.route("/get_robot_move", methods=["GET"])
 def get_robot_move():
