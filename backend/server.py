@@ -26,6 +26,27 @@ def check_winner():
         return "draw"
     return None
 
+def score_move(index, player):
+    # Simulate the move
+    original = board[index]
+    board[index] = player
+    score = 0
+
+    if check_winner() == player:
+        score = 10
+    else:
+        # Blocking move check
+        opponent = "O" if player == "X" else "X"
+        for i, v in enumerate(board):
+            if v == "":
+                board[i] = opponent
+                if check_winner() == opponent:
+                    score = 9
+                board[i] = ""
+
+    board[index] = original
+    return score
+
 def get_best_move():
     available_moves = [i for i, v in enumerate(board) if v == ""]
     if not available_moves:
@@ -45,21 +66,19 @@ def get_best_move():
             board[move] = ""
     return random.choice(available_moves)
 
-def get_best_human_move():
-    available_moves = [i for i, v in enumerate(board) if v == ""]
-    for move in available_moves:
-        board[move] = "X"
-        if check_winner() == "X":
-            board[move] = ""
-            return move
-        board[move] = ""
-    for move in available_moves:
-        board[move] = "O"
-        if check_winner() == "O":
-            board[move] = ""
-            return move
-        board[move] = ""
-    return available_moves[0] if available_moves else None
+def get_best_human_moves():
+    available = [i for i, v in enumerate(board) if v == ""]
+    if not available:
+        return []
+
+    scored_moves = [(i, score_move(i, "X")) for i in available]
+    if not scored_moves:
+        return []
+
+    max_score = max(score for _, score in scored_moves)
+    best_moves = [i for i, score in scored_moves if score == max_score]
+
+    return best_moves
 
 @app.route("/", methods=["GET"])
 def home():
@@ -91,18 +110,17 @@ def update_board():
     if board[index] != "":
         return jsonify({"message": "Invalid move: Spot taken"}), 400
 
-    # Before placing the move, get best move for comparison
-    available_moves_before = [i for i, v in enumerate(board) if v == ""]
-    best_move = get_best_human_move()
+    # Check if the move is among optimal ones before applying it
+    best_moves = get_best_human_moves()
 
-    # Apply human move
+    # Apply the human move
     board[index] = "X"
     winner = check_winner()
     if winner:
         return jsonify({"message": "Game over", "winner": winner, "board": board})
 
-    # React to the move
-    if index == best_move:
+    # Comment on human's move based on optimality
+    if index in best_moves:
         comment = random.choice([
             "Nice one!", 
             "That was sharp!", 
@@ -121,7 +139,6 @@ def update_board():
 
     current_player = "O"
     return jsonify({"message": "Move registered", "board": board})
-
 
 @app.route("/get_robot_move", methods=["GET"])
 def get_robot_move():
