@@ -45,6 +45,22 @@ def get_best_move():
             board[move] = ""
     return random.choice(available_moves)
 
+def get_best_human_move():
+    available_moves = [i for i, v in enumerate(board) if v == ""]
+    for move in available_moves:
+        board[move] = "X"
+        if check_winner() == "X":
+            board[move] = ""
+            return move
+        board[move] = ""
+    for move in available_moves:
+        board[move] = "O"
+        if check_winner() == "O":
+            board[move] = ""
+            return move
+        board[move] = ""
+    return available_moves[0] if available_moves else None
+
 @app.route("/", methods=["GET"])
 def home():
     return jsonify({"message": "Tic-Tac-Toe API is running!"})
@@ -67,30 +83,50 @@ def start_game():
 def update_board():
     global current_player
     data = request.get_json()
-    print(data)
     index = data.get("indice")
-    print(index)
+
     if index is None or not (0 <= index < 9):
         return jsonify({"message": "Invalid move: Out of range"}), 400
 
     if board[index] != "":
         return jsonify({"message": "Invalid move: Spot taken"}), 400
 
-    board[index] = "X"  # Human moves
-    winner = check_winner() 
-    if winner:
-        print("Winner: ", winner)
-        return jsonify({"message": "Game over", "winner": winner, "board": board})
-        
-    current_player = "O"
+    # Before placing the move, get best move for comparison
+    available_moves_before = [i for i, v in enumerate(board) if v == ""]
+    best_move = get_best_human_move()
 
+    # Apply human move
+    board[index] = "X"
+    winner = check_winner()
+    if winner:
+        return jsonify({"message": "Game over", "winner": winner, "board": board})
+
+    # React to the move
+    if index == best_move:
+        comment = random.choice([
+            "Nice one!", 
+            "That was sharp!", 
+            "You're playing optimally!", 
+            "Wow, you're tough to beat!"
+        ])
+    else:
+        comment = random.choice([
+            "Hmm... you missed something!", 
+            "Are you sure that was the best move?", 
+            "Interesting... but not optimal.", 
+            "That move was... okay."
+        ])
+    
+    requests.post(f"{PEPPER_API_URL}/speak", json={"text": comment})
+
+    current_player = "O"
     return jsonify({"message": "Move registered", "board": board})
+
 
 @app.route("/get_robot_move", methods=["GET"])
 def get_robot_move():
     global current_player
     if current_player == "O":
-        # Introduce a delay before pepper moves to make it more natural
         time.sleep(2)
 
         move = get_best_move()
@@ -99,12 +135,8 @@ def get_robot_move():
             winner = check_winner()
             if winner:
                 return jsonify({"message": "Game over", "winner": winner, "board": board})
-            
-            current_player = "X"
 
-            # Make Pepper say a random comment, i have to maybe change this later
-            comments = ["Nice move!", "You're a tough opponent!", "That was smart!", "Hmm... tricky!"]
-            requests.post(f"{PEPPER_API_URL}/speak", json={"text": random.choice(comments)})
+            current_player = "X"
 
             return jsonify({"message": "Robot moved", "move": move, "board": board})
     
