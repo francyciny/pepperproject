@@ -75,7 +75,7 @@ export default {
       board: Array(9).fill(""),
       currentPlayer: "",
       winner: null,
-      url: "https://fb77-78-211-91-149.ngrok-free.app" // "https://1c70-78-211-157-39.ngrok-free.app"
+      url:  "https://fb77-78-211-91-149.ngrok-free.app" //"https://3f2d-151-100-17-170.ngrok-free.app"
     };
   },
   mounted() {

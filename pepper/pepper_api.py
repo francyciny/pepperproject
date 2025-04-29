@@ -4,6 +4,7 @@ from flask import Flask, request, jsonify
 import sys
 import qi 
 from authentication import AuthenticatorFactory
+import math
 
 try:
     from naoqi import ALProxy  # Import the real SDK if available
@@ -103,44 +104,29 @@ def announce_winner():
     
     if winner == "O":
         tts.say("I won! Good game!")
-        motion.setAngles("LElbowRoll", 6, 0.1)
-        motion.setAngles("HipRoll", 2 , 0.5)
-        time.sleep(1)
-        motion.setAngles("HipRoll", -2 , 0.5)
-        time.sleep(1)
-        motion.setAngles("HipRoll", 2 , 0.5)
-        time.sleep(1)
-        motion.setAngles("HipRoll", -2 , 0.5)
+        motion.angleInterpolation("HipRoll", math.radians(-30), 1, True)
+        motion.angleInterpolation("HipRoll", math.radians(30), 1, True)
+        motion.angleInterpolation("HipRoll", math.radians(-30), 1, True)
+        motion.angleInterpolation("HipRoll", math.radians(30), 1, True)
     elif winner == "X":
         tts.say("You won! Well played!")
         color = int(0) << 16 | int(255) << 8 | int(0)  # RGB values (0,255,0) for green
         leds.fadeRGB("FaceLeds", color, 0.5) 
-        motion.setAngles("HeadPitch", 1, 0.2)
-        ## leds.fadeRGB("FaceLeds", int("0000FF", 16), 1.0)
-        ## leds.fadeRGB("FaceLeds", 0, 0, 255, 1.0)  # RGB values (0,0,255) for blue
-        ## leds.fadeRGB("FaceLeds", 0x0000FF, 1.0)  
+        motion.angleInterpolation("HeadPitch", math.radians(30), 1, True)
     elif winner == "draw":
         tts.say("It's a draw!")
-        motion.setAngles("HeadYaw", 0.3, 0.2)
-        motion.setAngles("HeadYaw", -0.6, 0.2)
-        motion.setAngles("HeadPitch", 0.0, 0.2)
-        motion.setAngles("HipRoll", 2.5, 0.2)
-        motion.setAngles("HipRoll", -5, 0.2)
+        motion.angleInterpolation("HeadYaw", math.radians(-30), 1, True)
+        motion.angleInterpolation("HeadPitch", math.radians(9), 1, True)
+        motion.angleInterpolation("HipRoll", math.radians(-28), 1, True)
 
     return jsonify({"message": "Winner announced", "winner": winner})
 
 @app.route("/resting_position", methods=["POST"])
 def resting_position():
     print("Moving Pepper to resting position")  # Debugging 
-    
-    motion.setAngles("RShoulderPitch", 1.8, 0.5)
-    motion.setAngles("LShoulderPitch", 1.8, 0.5)
-    motion.setAngles("HeadYaw", 0.0, 0.5)
-    motion.setAngles("RWristYaw", 0.0, 0.5)  
-    motion.setAngles("HeadPitch", 0.0, 0.5)
-    motion.setAngles("HipRoll", 0, 0.5)  
-    
-
+    motion.angleInterpolation("HeadYaw", math.radians(0), 0.5, True)
+    motion.angleInterpolation("HeadPitch", math.radians(0), 0.5, True)
+    motion.angleInterpolation("HipRoll", math.radians(0), 0.5, True)
     return jsonify({"message": "Moving to resting position"})
 
 # Social interaction routes moved to server.py
