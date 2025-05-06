@@ -109,6 +109,7 @@ def announce_winner():
     
     if winner == "O":
         tts.say("I won! Good game!")
+        leds.fadeRGB("FaceLeds", "green", 1) 
         motion.angleInterpolation("HipRoll", math.radians(-30), 1, True)
         motion.angleInterpolation("HipRoll", math.radians(30), 1, True)
         motion.angleInterpolation("HipRoll", math.radians(-30), 1, True)
@@ -116,10 +117,11 @@ def announce_winner():
     elif winner == "X":
         tts.say("You won! Well played!")
         color = int(0) << 16 | int(255) << 8 | int(0)  # RGB values (0,255,0) for green
-        leds.fadeRGB("FaceLeds", color, 0.5) 
+        leds.fadeRGB("FaceLeds", "blue", 1) 
         motion.angleInterpolation("HeadPitch", math.radians(30), 1, True)
     elif winner == "draw":
         tts.say("It's a draw!")
+        leds.fadeRGB("FaceLeds", "yellow", 1)
         motion.angleInterpolation("HeadYaw", math.radians(-30), 1, True)
         motion.angleInterpolation("HeadPitch", math.radians(9), 1, True)
         motion.angleInterpolation("HipRoll", math.radians(-28), 1, True)

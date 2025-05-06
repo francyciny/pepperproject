@@ -31,7 +31,7 @@
     </div>
 
     <!-- Game Page -->
-    <div v-if="!showIntro && !showTitleScreen && !showYesNo && !showNameInput">
+    <div v-if="!showIntro && !showTitleScreen && !showYesNo && !showNameInput" class="game-container">
       <p v-if="!winner" class="turn-text">Current Turn: {{ currentPlayer }}</p>
 
       <!-- Tic-Tac-Toe Board -->
@@ -55,7 +55,7 @@
       </div>
 
       <!-- Quit Game Button -->
-      <button class="quit-button" @click="quitGame('quit')">Quit Game</button>
+      <button class="quit-button" @click="pauseGame('quit')">Quit Game</button>
     </div>
   </div>
 </template>
@@ -75,7 +75,7 @@ export default {
       board: Array(9).fill(""),
       currentPlayer: "",
       winner: null,
-      url: "https://3c03-37-161-116-18.ngrok-free.app" //"https://fb77-78-211-91-149.ngrok-free.app" 
+      url: "https://0514-82-145-113-213.ngrok-free.app" // Changes everytime a new tunnel is created
     };
   },
   mounted() {
@@ -208,6 +208,15 @@ export default {
         setTimeout(() => this.getRobotMove(), 1000);
       }
     }, 
+
+    async pauseGame(input) {
+      await axios.post(this.url +"/restart_game", {input} , {headers: {'ngrok-skip-browser-warning': 'true'}});
+      this.showIntro = true;
+      this.board = Array(9).fill("");
+      this.winner = null;
+      this.gameStarted = false;
+      this.showTitleScreen = false;
+    },
 
     async quitGame(input) {
       await axios.post(this.url +"/restart_game", {input} , {headers: {'ngrok-skip-browser-warning': 'true'}});
@@ -379,6 +388,16 @@ button.restart-button:hover {
 
 .quit-button:hover {
   background-color: #e60000;
+}
+
+/* Game Page */
+.game-container {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; 
+  align-items: center;
 }
 
 /* Game Board */
