@@ -72,10 +72,13 @@ export default {
       showNameInput: false,
       showYesNo: false,
       gameStarted: false,
+      gameRestarted: true,
+      gamePaused: true,
+      gameQuit: true,
       board: Array(9).fill(""),
       currentPlayer: "",
       winner: null,
-      url: "https://d3a1-78-209-253-147.ngrok-free.app" // Changes everytime a new tunnel is created
+      url: "https://826a-151-100-200-98.ngrok-free.app" // Changes everytime a new tunnel is created
     };
   },
   mounted() {
@@ -197,36 +200,47 @@ export default {
     },
 
     async restartGame(input) {
-      await axios.post(this.url +"/restart_game", {input} , {headers: {'ngrok-skip-browser-warning': 'true'}});
-      const response = await axios.post(this.url +"/start_game", {headers: {'ngrok-skip-browser-warning': 'true'}});
-      this.currentPlayer = response.data.first_player;
-      this.board = Array(9).fill("");
-      this.winner = null;
-      this.gameStarted = true;
-      this.gameRestarted = false;
-      if (this.currentPlayer === "O") {
-        setTimeout(() => this.getRobotMove(), 1000);
+      if (this.gameRestarted === true) {
+        this.gameRestarted = false;
+        await axios.post(this.url +"/restart_game", {input} , {headers: {'ngrok-skip-browser-warning': 'true'}});
+        const response = await axios.post(this.url +"/start_game", {headers: {'ngrok-skip-browser-warning': 'true'}});
+        this.currentPlayer = response.data.first_player;
+        this.board = Array(9).fill("");
+        this.winner = null;
+        this.gameStarted = true;
+        this.gameRestarted = true;
+        if (this.currentPlayer === "O") {
+          setTimeout(() => this.getRobotMove(), 1000);
+        }
       }
     }, 
 
     async pauseGame(input) {
-      await axios.post(this.url +"/restart_game", {input} , {headers: {'ngrok-skip-browser-warning': 'true'}});
-      this.showIntro = true;
-      this.board = Array(9).fill("");
-      this.winner = null;
-      this.gameStarted = false;
-      this.showTitleScreen = false;
+      if (this.gamePaused === true) {
+        this.gamePaused = false;
+        await axios.post(this.url +"/restart_game", {input} , {headers: {'ngrok-skip-browser-warning': 'true'}});
+        this.showIntro = true;
+        this.board = Array(9).fill("");
+        this.winner = null;
+        this.gameStarted = false;
+        this.showTitleScreen = false;
+        this.gamePaused = true;
+      }
     },
 
     async quitGame(input) {
-      await axios.post(this.url +"/restart_game", {input} , {headers: {'ngrok-skip-browser-warning': 'true'}});
-      this.showIntro = false;
-      this.board = Array(9).fill("");
-      this.winner = null;
-      this.gameStarted = false;
-      this.userName = "";
-      this.showTitleScreen = true;
-      this.startTitleSequence();
+      if (this.gameQuit === true) {
+        this.gameQuit = false;
+        await axios.post(this.url +"/restart_game", {input} , {headers: {'ngrok-skip-browser-warning': 'true'}});
+        this.showIntro = false;
+        this.board = Array(9).fill("");
+        this.winner = null;
+        this.gameStarted = false;
+        this.userName = "";
+        this.showTitleScreen = true;
+        this.gameQuit = true;
+        this.startTitleSequence();
+      }
     },
   },
 };
