@@ -204,6 +204,8 @@ def restart_game():
     input = data.get("input")
     if input == "rematch":
         requests.post(f"{PEPPER_API_URL}/speak", json={"text": "Great! It's a rematch"})
+    elif input == "pause":
+        requests.post(f"{PEPPER_API_URL}/speak", json={"text": "Ok! I'll be here if you want to play again soon. If not just press quit"})
     else:
         requests.post(f"{PEPPER_API_URL}/speak", json={"text": "Alright! See you next time"})
     return jsonify({"message": "Game restarted"})
@@ -224,7 +226,6 @@ def announce_winner():
     winner = data.get("winner")
 
     requests.post(f"{PEPPER_API_URL}/announce_winner", json={"winner": winner})
-    time.sleep(3)
     requests.post(f"{PEPPER_API_URL}/resting_position", json={"winner": winner})
 
     return jsonify({"message": "Winner announced", "winner": winner})

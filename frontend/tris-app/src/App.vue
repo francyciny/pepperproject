@@ -55,7 +55,7 @@
       </div>
 
       <!-- Quit Game Button -->
-      <button class="quit-button" @click="pauseGame('quit')">Quit Game</button>
+      <button class="quit-button" @click="pauseGame('pause')">Quit Game</button>
     </div>
   </div>
 </template>
@@ -203,7 +203,7 @@ export default {
       this.board = Array(9).fill("");
       this.winner = null;
       this.gameStarted = true;
-
+      this.gameRestarted = false;
       if (this.currentPlayer === "O") {
         setTimeout(() => this.getRobotMove(), 1000);
       }
