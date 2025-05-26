@@ -184,7 +184,26 @@ def play_again():
 @app.route("/get_username", methods=["POST"])
 def get_username():
     data = request.get_json()
-    username = data.get("name")
+    username = data.get("name", "").strip()
+
+    # Validation: non-empty, reasonable length, only letters
+    if not username:
+        requests.post(f"{PEPPER_API_URL}/speak", json={"text": f"You must enter a name."})
+        return jsonify({"error": "Name cannot be empty."}), 400
+    if not username.isalpha():
+        requests.post(f"{PEPPER_API_URL}/speak", json={"text": f"Your name must contain only letters."})
+        return jsonify({"error": "Name must contain only letters."}), 400
+    if len(username) > 20:
+        requests.post(f"{PEPPER_API_URL}/speak", json={"text": f"Your name must be less than 20 characters."})
+        return jsonify({"error": "Name is too long (max 20 characters)."}), 400
+
+    # Check UTF-8 compatibility
+    try:
+        username.encode("utf-8")
+    except UnicodeEncodeError:
+        requests.post(f"{PEPPER_API_URL}/speak", json={"text": f"Your name contains invalid characters."})
+        return jsonify({"error": "Invalid characters in name."}), 400 
+
     requests.post(f"{PEPPER_API_URL}/speak", json={"text": f"Nice to meet you, {username}!"})
     return jsonify({"message": "Username received", "username": username})
 
