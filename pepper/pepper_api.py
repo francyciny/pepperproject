@@ -5,6 +5,7 @@ import sys
 import qi 
 from authentication import AuthenticatorFactory
 import math
+import threading
 
 try:
     from naoqi import ALProxy  # Import the real SDK if available
@@ -109,31 +110,53 @@ def announce_winner():
     
     if winner == "O":
         tts.say("I won! Good game!")
+        threading.Thread(target=tts.say, args=("Do you want to play again? If yes press rematch, if no press quit.",)).start()
         leds.fadeRGB("FaceLeds", "green", 1) 
         motion.angleInterpolation("HipRoll", math.radians(-30), 1, True)
         motion.angleInterpolation("HipRoll", math.radians(30), 1, True)
         motion.angleInterpolation("HipRoll", math.radians(-30), 1, True)
         motion.angleInterpolation("HipRoll", math.radians(30), 1, True)
+        
     elif winner == "X":
         tts.say("You won! Well played!")
+        threading.Thread(target=tts.say, args=("Do you want to play again? If yes press rematch, if no press quit.",)).start()
         color = int(0) << 16 | int(255) << 8 | int(0)  # RGB values (0,255,0) for green
-        leds.fadeRGB("FaceLeds", "blue", 1) 
+        '''
+        leds.fadeRGB("FaceLeds", "blue", 1)
         motion.angleInterpolation("HeadPitch", math.radians(30), 1, True)
+        '''
+        threading.Thread(target=leds.fadeRGB, args=("FaceLeds", "blue",1)).start()
+        threading.Thread(target=motion.angleInterpolation, args=("HipPitch", math.radians(-30), 1, True)).start()
     elif winner == "draw":
         tts.say("It's a draw!")
+        threading.Thread(target=tts.say, args=("Do you want to play again? If yes press rematch, if no press quit.",)).start()
+        '''
         leds.fadeRGB("FaceLeds", "yellow", 1)
         motion.angleInterpolation("HeadYaw", math.radians(-30), 1, True)
         motion.angleInterpolation("HeadPitch", math.radians(9), 1, True)
         motion.angleInterpolation("HipRoll", math.radians(-28), 1, True)
-
+        '''
+        threading.Thread(target=leds.fadeRGB, args=("FaceLeds", "yellow",1)).start()
+        threading.Thread(target=motion.angleInterpolation, args=("HeadYaw", math.radians(-30), 1, True)).start()
+        threading.Thread(target=motion.angleInterpolation, args=("HeadPitch", math.radians(9), 1, True)).start()
+        threading.Thread(target=motion.angleInterpolation, args=("HipRoll", math.radians(-28), 1, True)).start()
+        
     return jsonify({"message": "Winner announced", "winner": winner})
 
 @app.route("/resting_position", methods=["POST"])
 def resting_position():
     print("Moving Pepper to resting position")  # Debugging 
+    
     motion.angleInterpolation("HeadYaw", math.radians(0), 0.5, True)
     motion.angleInterpolation("HeadPitch", math.radians(0), 0.5, True)
     motion.angleInterpolation("HipRoll", math.radians(0), 0.5, True)
+    motion.angleInterpolation("HipPitch", math.radians(0), 0.5, True)
+    '''
+    threading.Thread(target=motion.angleInterpolation, args=("HeadYaw", math.radians(0), 0.5, True)).start()
+    threading.Thread(target=motion.angleInterpolation, args=("HeadPitch", math.radians(0), 0.5, True)).start()
+    threading.Thread(target=motion.angleInterpolation, args=("HipRoll", math.radians(0), 0.5, True)).start()
+    threading.Thread(target=motion.angleInterpolation, args=("HipPitch", math.radians(0), 0.5, True)).start()
+    '''
     return jsonify({"message": "Moving to resting position"})
 
 # Social interaction routes moved to server.py

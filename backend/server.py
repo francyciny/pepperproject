@@ -176,10 +176,12 @@ def greet_user():
     
     return jsonify({"message": "Robot has greeted the user."})
 
+'''
 @app.route("/play_again", methods=["GET"])
 def play_again():
     requests.post(f"{PEPPER_API_URL}/speak", json={"text": "Do you want to play again? If yes press rematch, if no press quit."})
     return jsonify({"answer": "Robot has asked to play again."})
+'''
 
 @app.route("/get_username", methods=["POST"])
 def get_username():

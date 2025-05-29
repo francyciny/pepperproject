@@ -78,11 +78,12 @@ export default {
       moveMade: true,
       gameRestarted: true,
       gamePaused: true,
+      gameStart: true,
       gameQuit: true,
       board: Array(9).fill(""),
       currentPlayer: "",
       winner: null,
-      url: "https://73c3-82-145-109-170.ngrok-free.app" // Changes everytime a new tunnel is created
+      url: "https://5bfd-37-163-38-144.ngrok-free.app" // Changes everytime a new tunnel is created
     };
   },
   mounted() {
@@ -165,16 +166,22 @@ export default {
     },
 
     async startGame() {
-      this.showIntro = false;
-      this.showYesNo = false;
-      const response = await axios.post(this.url +"/start_game", {headers: {'ngrok-skip-browser-warning': 'true'}});
-      this.currentPlayer = response.data.first_player;
-      this.board = Array(9).fill(""); 
-      this.winner = null;
-      this.gameStarted = true;
+      if (this.gameStart === true || this.gameQuit === true) {
+        this.gameQuit = false;
+        this.gameStart = false;
+        this.showIntro = false;
+        this.showYesNo = false;
+        const response = await axios.post(this.url +"/start_game", {headers: {'ngrok-skip-browser-warning': 'true'}});
+        this.currentPlayer = response.data.first_player;
+        this.board = Array(9).fill(""); 
+        this.winner = null;
+        this.gameStart = true;
+        this.gameQuit = true;
+        this.gameStarted = true;
 
-      if (this.currentPlayer === "O") {
-        setTimeout(() => this.getRobotMove(), 1000);
+        if (this.currentPlayer === "O") {
+          setTimeout(() => this.getRobotMove(), 1000);
+        }
       }
     },
 
@@ -191,7 +198,7 @@ export default {
             this.winner = response.data.winner;
             console.log("Winner:", this.winner);
             await axios.post(this.url +"/announce_winner", {winner: this.winner} , {headers: {'ngrok-skip-browser-warning': 'true'}});
-            await axios.get(this.url +"/play_again", {headers: {'ngrok-skip-browser-warning': 'true'}});
+            // await axios.get(this.url +"/play_again", {headers: {'ngrok-skip-browser-warning': 'true'}});
             this.moveMade = true;
             return;  
           }
@@ -217,7 +224,7 @@ export default {
         if (response.data.message === "Game over") {
           this.winner = response.data.winner;
           await axios.post(this.url +"/announce_winner", {winner: this.winner} , {headers: {'ngrok-skip-browser-warning': 'true'}});
-          await axios.get(this.url +"/play_again", {headers: {'ngrok-skip-browser-warning': 'true'}});
+          //await axios.get(this.url +"/play_again", {headers: {'ngrok-skip-browser-warning': 'true'}});
           return;  
         }
 
@@ -230,7 +237,8 @@ export default {
     },
 
     async restartGame(input) {
-      if (this.gameRestarted === true) {
+      if (this.gameRestarted === true || this.gamePaused === true) {
+        this.gamePaused = false;
         this.gameRestarted = false;
         await axios.post(this.url +"/restart_game", {input} , {headers: {'ngrok-skip-browser-warning': 'true'}});
         const response = await axios.post(this.url +"/start_game", {headers: {'ngrok-skip-browser-warning': 'true'}});
@@ -239,6 +247,7 @@ export default {
         this.winner = null;
         this.gameStarted = true;
         this.gameRestarted = true;
+        this.gamePaused = true;
         if (this.currentPlayer === "O") {
           setTimeout(() => this.getRobotMove(), 1000);
         }
@@ -246,7 +255,8 @@ export default {
     }, 
 
     async pauseGame(input) {
-      if (this.gamePaused === true) {
+      if (this.gamePaused === true || this.gameRestarted === true) {
+        this.gameRestarted = false;
         this.gamePaused = false;
         await axios.post(this.url +"/restart_game", {input} , {headers: {'ngrok-skip-browser-warning': 'true'}});
         this.showIntro = true;
@@ -255,12 +265,14 @@ export default {
         this.gameStarted = false;
         this.showTitleScreen = false;
         this.gamePaused = true;
+        this.gameRestarted = true;
       }
     },
 
     async quitGame(input) {
-      if (this.gameQuit === true) {
+      if (this.gameQuit === true || this.gameStart === true) {
         this.gameQuit = false;
+        this.gameStart = false; 
         await axios.post(this.url +"/restart_game", {input} , {headers: {'ngrok-skip-browser-warning': 'true'}});
         this.showIntro = false;
         this.board = Array(9).fill("");
@@ -269,6 +281,7 @@ export default {
         this.userName = "";
         this.showTitleScreen = true;
         this.gameQuit = true;
+        this.gameStart = true;
         //this.startTitleSequence();
       }
     },
