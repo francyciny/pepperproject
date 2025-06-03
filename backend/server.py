@@ -35,15 +35,15 @@ def get_best_move():
             board[move] = "O"
             if check_winner() == "O":
                 board[move] = ""
-                return move
+                return [move, available_moves]
             board[move] = ""
         for move in available_moves:
             board[move] = "X"
             if check_winner() == "X":
                 board[move] = ""
-                return move
+                return [move, available_moves]
             board[move] = ""
-    return random.choice(available_moves)
+    return [random.choice(available_moves), available_moves]
 
 def get_optimal_human_moves():
     available_moves = [i for i, v in enumerate(board) if v == ""]
@@ -118,6 +118,13 @@ def update_board():
 
     current_player = "O"
 
+    return jsonify({"message": "Move registered", "board": board, "optimal": is_optimal})
+
+@app.route("/get_optimality_comment", methods=["POST"])
+def get_optimality_comment():
+    data = request.get_json()
+    is_optimal = data.get("optimal")
+
     # Speak based on optimality
     if is_optimal:
         comment = random.choice([
@@ -136,16 +143,18 @@ def update_board():
 
     requests.post(f"{PEPPER_API_URL}/speak", json={"text": comment})
 
-    return jsonify({"message": "Move registered", "board": board})
-
+    return jsonify({"message": "Optimality comment made", "comment": comment})
 
 @app.route("/get_robot_move", methods=["GET"])
 def get_robot_move():
     global current_player
     if current_player == "O":
-        time.sleep(2)
 
-        move = get_best_move()
+        if len(get_best_move()[1]) > 1:
+            times = [0.2, 1, 2]
+            time.sleep(random.choice(times))  # Simulate thinking time
+
+        move = get_best_move()[0]
         if move is not None:
             board[move] = "O"
             winner = check_winner()

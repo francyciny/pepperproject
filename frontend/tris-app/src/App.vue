@@ -31,7 +31,7 @@
     </div>
 
     <!-- Game Page -->
-    <div v-if="!showIntro && !showTitleScreen && !showYesNo && !showNameInput" class="game-container">
+    <div v-if="gameStarted" class="game-container">
       <p v-if="!winner" class="turn-text">Current Turn: {{ currentPlayer }}</p>
 
       <!-- Tic-Tac-Toe Board -->
@@ -117,26 +117,25 @@ export default {
         try {
           await axios.post(this.url +"/get_username", { name: this.userName }, {headers: {'ngrok-skip-browser-warning': 'true'}});
           this.getYesNoResponse();
-          this.nameSubmitted = true;
         }catch (error) {
           if (error.response && error.response.data && error.response.data.error) {
-            alert("Error: " + error.response.data.error);
+            console.log("Error: " + error.response.data.error);
           } else {
             alert("Unknown error occurred. Using default name.");
             this.userName = "Player";
             this.getYesNoResponse();
           }
-          this.nameSubmitted = true;
+          this.nameSubmitted = true; // Reset nameSubmitted to allow resubmission
         }
       }
     },
 
     async getYesNoResponse() {
       try {
-        const response = await axios.get(this.url +"/get_yes_no", {headers: {'ngrok-skip-browser-warning': 'true'}});
-        console.log(response.data);
         this.showNameInput = false;
         this.showYesNo = true;
+        const response = await axios.get(this.url +"/get_yes_no", {headers: {'ngrok-skip-browser-warning': 'true'}});
+        console.log(response.data);
       } catch (error) {
         console.error("Error getting yes/no response:", error);
       }
@@ -144,6 +143,7 @@ export default {
 
     async gameYes() {
       if (this.pressedYes === true || this.pressedNo === true) {
+        this.nameSubmitted = true;
         this.pressedYes = false;
         this.pressedNo = false;
         await axios.post(this.url +"/game_response", { response: "yes"} , {headers: {'ngrok-skip-browser-warning': 'true'}});
@@ -155,6 +155,7 @@ export default {
 
     async gameNo(){
       if (this.pressedYes === true || this.pressedNo === true) {
+        this.nameSubmitted = true;
         this.pressedYes = false;
         this.pressedNo = false;
         await axios.post(this.url +"/game_response", {response: "no"} , {headers: {'ngrok-skip-browser-warning': 'true'}});
@@ -171,13 +172,13 @@ export default {
         this.gameStart = false;
         this.showIntro = false;
         this.showYesNo = false;
+        this.gameStarted = true;
         const response = await axios.post(this.url +"/start_game", {headers: {'ngrok-skip-browser-warning': 'true'}});
         this.currentPlayer = response.data.first_player;
         this.board = Array(9).fill(""); 
         this.winner = null;
         this.gameStart = true;
         this.gameQuit = true;
-        this.gameStarted = true;
 
         if (this.currentPlayer === "O") {
           setTimeout(() => this.getRobotMove(), 1000);
@@ -193,7 +194,8 @@ export default {
           const response = await axios.post(this.url +"/update_board", {indice: index} , {headers: {'ngrok-skip-browser-warning': 'true'}});
           console.log(response.data);
           this.board = response.data.board;
-
+          const optimal = response.data.optimal;
+          
           if (response.data.message === "Game over") {
             this.winner = response.data.winner;
             console.log("Winner:", this.winner);
@@ -202,6 +204,8 @@ export default {
             this.moveMade = true;
             return;  
           }
+
+          await axios.post(this.url +"/get_optimality_comment", {optimal: optimal} , {headers: {'ngrok-skip-browser-warning': 'true'}});
 
           this.currentPlayer = "O";
           await axios.post(this.url +"/announce_turn", {player: this.currentPlayer} , {headers: {'ngrok-skip-browser-warning': 'true'}});
