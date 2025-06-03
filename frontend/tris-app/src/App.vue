@@ -1,8 +1,11 @@
 <template>
   <div id="app">
     <!-- Title Screen -->
-    <div v-if="showTitleScreen" class="title-screen">
-      <h1 id="hello" class="robot-title">HELLO</h1>
+    <div v-if="showTitleScreen" class="title-screen" @click="startTitleSequence" @touchstart="startTitleSequence">
+      <div class="title-content">
+        <h1 id="hello" class="robot-title">HELLO</h1>
+        <p v-if="showTap" class="tap-to-begin">Tap anywhere to begin</p>
+      </div>
     </div>
 
     <!-- Name Input -->
@@ -68,9 +71,11 @@ export default {
     return {
       userName: "",
       showTitleScreen: true,
+      showTap: true, 
       showIntro: false,
       showNameInput: false,
       showYesNo: false,
+      titleStart: true,
       gameStarted: false,
       nameSubmitted: true,
       pressedYes: true,
@@ -87,15 +92,15 @@ export default {
     };
   },
   mounted() {
-    this.startTitleSequence();
+    //this.setupTouchStartTrigger();
   },
   methods: {
     async startTitleSequence() {
-      // Show "HELLO" until pepper greets user
-      setTimeout(async () => {
-        // this.showTitleScreen = false;
+      if (this.titleStart === true) {
+        this.titleStart = false;
+        this.showTap = false;
         await this.greetUser();
-      }, 2000);
+      }
     },
 
     async greetUser(){
@@ -105,9 +110,13 @@ export default {
         console.log("aooo");
         this.showTitleScreen = false;
         this.showNameInput = true;
+        this.titleStart = true;
+        this.showTap = true;
       } catch (error) {
         document.getElementById("hello").innerText = "ERRORE: " + error;
         console.error("Error greeting:", error);
+        this.titleStart = true;
+        this.showTap = true;
       }
     },
 
@@ -296,6 +305,18 @@ export default {
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
 
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  height: 100%;
+  overscroll-behavior-y: none; 
+  touch-action: manipulation;  
+  -webkit-user-select: none; 
+  -ms-user-select: none;
+  user-select: none;
+}
+
 /* General Styles */
 #app {
   text-align: center;
@@ -330,6 +351,29 @@ export default {
   }
   50% {
     text-shadow: 0 0 20px #00ffff, 0 0 30px #00ffff;
+  }
+}
+
+.title-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tap-to-begin {
+  font-family: 'Orbitron', monospace;
+  font-size: 1.2vw;
+  color: #888;
+  margin-top: 10px;
+  animation: fadeBlink 1.8s ease-in-out infinite;
+}
+
+@keyframes fadeBlink {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
   }
 }
 
