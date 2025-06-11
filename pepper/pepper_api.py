@@ -90,7 +90,10 @@ def speak():
     text = text.encode("utf-8") if isinstance(text, unicode) else str(text)
 
     print("Sending text to Pepper: {}".format(repr(text)))  # Debugging
+
+    #threading.Thread(target=tts.say, args=(text,)).start()  # Use threading to avoid blocking
     tts.say(text)  
+    
     return jsonify({"message": "Speaking", "text": text})
 
 @app.route("/announce_turn", methods=["POST"])
