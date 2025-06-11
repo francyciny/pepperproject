@@ -88,7 +88,7 @@ export default {
       board: Array(9).fill(""),
       currentPlayer: "",
       winner: null,
-      url: "https://e2e3-78-209-188-199.ngrok-free.app" // Changes everytime a new tunnel is created
+      url: "https://e11b-78-209-188-199.ngrok-free.app" // Changes everytime a new tunnel is created
     };
   },
   mounted() {
