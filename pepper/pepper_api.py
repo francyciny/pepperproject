@@ -91,9 +91,11 @@ def speak():
 
     print("Sending text to Pepper: {}".format(repr(text)))  # Debugging
 
-    #threading.Thread(target=tts.say, args=(text,)).start()  # Use threading to avoid blocking
-    tts.say(text)  
-    
+    if "Nice to meet you" in text:
+        threading.Thread(target=tts.say, args=(text,)).start()  # Use threading to avoid blocking
+    else:
+        tts.say(text)  
+
     return jsonify({"message": "Speaking", "text": text})
 
 @app.route("/announce_turn", methods=["POST"])
